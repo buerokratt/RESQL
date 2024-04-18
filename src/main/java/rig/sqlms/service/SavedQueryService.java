@@ -49,7 +49,7 @@ public class SavedQueryService {
                         loadQueries(project, method, file.listFiles());
                     } else {
                         try {
-                            savedQueries.get(project).get(method).put(getQueryName(file), SavedQuery.of(file.getAbsolutePath()));
+                            savedQueries.get(project).get(method).put(getQueryName(file), SavedQuery.of(file.getAbsolutePath(), project));
                         } catch (Throwable t) {
                             log.error("Failed parsing saved query file {}", file.getName(), t);
                         }
