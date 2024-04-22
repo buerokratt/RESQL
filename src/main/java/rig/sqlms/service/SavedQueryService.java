@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +23,9 @@ public class SavedQueryService {
     private final String[] METHODS = {"GET", "POST"};
 
     private final Map<String, Map<String, Map<String, SavedQuery>>> savedQueries = new HashMap<>();
+
+    private final static String PATHSPLITTER = "(/.+?){3}(/.+)\\..*";
+    public final static Pattern  pathPattern = Pattern.compile(PATHSPLITTER);
 
     public SavedQueryService(@Value("${sqlms.saved-queries-dir}") String savedQueriesDir) {
         log.info("Initializing SavedQueryService");
@@ -33,6 +38,8 @@ public class SavedQueryService {
                         getConfigDir(savedQueriesDir + "/"
                                 + projectDir.getName() + "/"
                                 + method + "/").listFiles());
+                log.info("Loaded queries: " +
+                        savedQueries.get(projectDir.getName()).get(method).entrySet().stream().map(entry-> entry.getKey()).collect(Collectors.joining(", ")));
             }
         }
     }
@@ -49,7 +56,7 @@ public class SavedQueryService {
                         loadQueries(project, method, file.listFiles());
                     } else {
                         try {
-                            savedQueries.get(project).get(method).put(getQueryName(file), SavedQuery.of(file.getAbsolutePath(), project));
+                            savedQueries.get(project).get(method).put(getQueryName(file, project, method), SavedQuery.of(file.getAbsolutePath(), project));
                         } catch (Throwable t) {
                             log.error("Failed parsing saved query file {}", file.getName(), t);
                         }
@@ -63,8 +70,11 @@ public class SavedQueryService {
         log.debug("Loaded queries: "+mapDeepToString(savedQueries));
     }
 
-    private String getQueryName(File file) {
-        return file.getName().substring(0, file.getName().lastIndexOf(".")).toLowerCase();
+    private String getQueryName(File file, String project, String method) {
+        Matcher pathmatcher = pathPattern.matcher(file.getPath());
+        pathmatcher.find();
+        return pathmatcher.group(2);
+        // return file.getPath().substring(project.length() + 1 + method.length(), file.getName().lastIndexOf(".")).toLowerCase();
     }
 
     @NonNull
