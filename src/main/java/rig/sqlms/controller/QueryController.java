@@ -27,10 +27,14 @@ public class QueryController {
      * @return JSON array containing the results
      */
     @Operation(description = "Initiates previously configured POST queries")
-    @PostMapping(value = "/{project}/{name}")
+    @PostMapping(value = "/{project}/**")
     public List<Map<String, Object>> execute(@PathVariable String project,
-                                             @PathVariable String name,
-                                             @RequestBody(required = false) Map<String, Object> parameters) {
+                                             @RequestBody(required = false) Map<String, Object> parameters,
+                                             HttpServletRequest request) {
+        Matcher urlMatcher = urlPattern.matcher(request.getRequestURI());
+        if (! urlMatcher.find())
+            throw new NotFoundException(request.getRequestURI() + " not found");
+        String name = urlMatcher.group(2);
         log.debug("INPUT POST: {}", name);
         return queryService.execute(project, "POST", name, parameters);
     }
