@@ -8,6 +8,7 @@ COPY .mvn .mvn
 COPY pom.xml .
 COPY src src
 COPY libs libs
+COPY .env .env
 ENV sqlms.saved-queries-dir=/DSL
 RUN mkdir -p DSL/GET DSL/POST
 RUN ./mvnw install:install-file -Dfile=libs/id-log-${ID_LOG_VERSION}.jar -DgroupId=ee.ria.commons -DartifactId=id-log -Dversion=${ID_LOG_VERSION} -Dpackaging=jar -DgeneratePom=true

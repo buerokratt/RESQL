@@ -80,9 +80,7 @@ public class SavedQueryService {
     @NonNull
     public SavedQuery get(String project, String method, String name) {
         SavedQuery query = savedQueries.get(project).get(method).get(name.trim().toLowerCase());
-
-        log.info("Searching for {} {}::{} found {}", method, project, name, mapDeepToString(savedQueries.get(project).get(method)));
-
+        
         if (query == null) {
             throw new ResqlRuntimeException("Saved query '%s' does not exist".formatted(name));
         }
