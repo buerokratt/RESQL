@@ -22,7 +22,7 @@ public record SavedQuery(String query, String dataSourceName) {
     }
 
     private static String getDatabaseName(String project) {
-        return project;
+        return "byk"; // TODO: change this to project if multiple datasources are needed;
     }
 
     private static int nthLastIndexOf(int nth, String character, String string) {
