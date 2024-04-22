@@ -5,17 +5,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.webjars.NotFoundException;
 import rig.sqlms.service.QueryService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class QueryController {
     private final QueryService queryService;
+
+    private static final Pattern urlPattern = Pattern.compile("(/.+?)(/.+)");
 
     /**
      * @return JSON array containing the results
@@ -25,7 +31,7 @@ public class QueryController {
     public List<Map<String, Object>> execute(@PathVariable String project,
                                              @PathVariable String name,
                                              @RequestBody(required = false) Map<String, Object> parameters) {
-        log.info("INPUT POST: "+ name);
+        log.debug("INPUT POST: {}", name);
         return queryService.execute(project, "POST", name, parameters);
     }
 
@@ -33,11 +39,15 @@ public class QueryController {
      * @return JSON array containing the results
      */
     @Operation(description = "Initiates previously configured GET queries")
-    @GetMapping(value = "/{project}/{name}")
+    @GetMapping(value = "/{project}/**")
     public List<Map<String, Object>> execute(@PathVariable String project,
-                                             @PathVariable String name,
-                                             @RequestParam(required = false) MultiValueMap<String, Object> parameters) {
-        log.info("INPUT GET: "+ name);
+                                             @RequestParam(required = false) MultiValueMap<String, Object> parameters,
+                                             HttpServletRequest request) {
+        Matcher urlMatcher = urlPattern.matcher(request.getRequestURI());
+        if (! urlMatcher.find())
+            throw new NotFoundException(request.getRequestURI() + " not found");
+        String name = urlMatcher.group(2);
+        log.debug("INPUT GET: {}", name);
         return queryService.execute(project, "GET", name, parameters.toSingleValueMap());
     }
 
