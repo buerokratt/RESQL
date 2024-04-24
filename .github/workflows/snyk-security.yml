@@ -44,7 +44,7 @@ jobs:
 
       #   # Install Dependencies
       - name: Install Dependencies
-        run:  chmod 754 ./gradlew && ./gradlew -Pprod clean bootJar 
+        run:  ./mvnw install:install-file -Dfile=libs/id-log-${ID_LOG_VERSION}.jar -DgroupId=ee.ria.commons -DartifactId=id-log -Dversion=${ID_LOG_VERSION} -Dpackaging=jar -DgeneratePom=true && ./mvnw install -DskipTests=true
 
         # Runs Snyk Open Source (SCA) analysis and uploads result to Snyk.
       - name: Snyk Open Source monitor
